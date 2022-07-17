@@ -9,47 +9,75 @@ function formatDate(timestamp) {
     if (minutes < 10) {
         minutes = `0${minutes}`;
     }
-    let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let days = [
+        "Sunday", 
+        "Monday", 
+        "Tuesday", 
+        "Wednesday", 
+        "Thursday", 
+        "Friday", 
+        "Saturday"
+    ];
     let day = days[date.getDay()];
     return `${day}  ${hours}:${minutes}`;
 }
 
-
-      
+//format day
+function formatDay(timestamp) {
+    let date = new Date(timestamp * 1000);
+    let day = date.getDay();
+    let days = [
+        "Sun", 
+        "Mon", 
+        "Tue", 
+        "Wed", 
+        "Thu", 
+        "Fri", 
+        "Sat"
+    ];
     
+    return days[day];
+  }
 
-
-function getForecast(coordinates) {
-    console.log(coordinates); 
-    apiKey = "360f33424340a0f95a8c619e705e8605";
-    let apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${coordinates.lat}&lon=${coordinates.lon}&appid=${apiKey}&units=metric`;
-    axios.get(apiUrl).then(displayForecast);
-}
-
-
-function displayForecast() {
+//forecast display
+function displayForecast(response) {
+    let forecast = response.data.daily;
     let forecastElement = document.querySelector("#forecast");
     let forecastHTML = `<div class="row">`;
-    let days = ["thu", "fri", "sat"];
-    days.forEach(function(day) {
-    forecastHTML = forecastHTML + `
-    
-<div class="col-2">
-    <div class="weather-forecast-date">${day}</div>
-    <img src="https://ssl.gstatic.com/onebox/weather/48/thunderstorms.png" alt="" width="42">
+     
+    forecast.forEach(function (forecastDay, index) {
+        if (index < 6) {
+   forecastHTML =
+    forecastHTML +
+     `
+    <div class="col-2">
+    <div class="weather-forecast-date">${formatDay(forecastDay.dt)}</div>
+    <img 
+    src="http://openweathermap.org/img/wn/${forecastDay.weather[0].icon}@2x.png"
+     alt="" 
+     width="42"/>
+     </br>
     <div class="weather-forecast-temperature">
-        <span class="weather-forecast-temperature-max">18°</span>
-        <span class="weather-forecast-temperature-min">12°</span>
+        <span class="weather-forecast-temperature-max">${Math.round
+            (forecastDay.temp.max)}°</span>
+        <span class="weather-forecast-temperature-min">${Math.round
+            (forecastDay.temp.min)}°</span>
     </div>
     </div>
+    `;    
+    }
+    });
+ 
+    forecastHTML = forecastHTML + `</div>`;
+    forecastElement.innerHTML = forecastHTML;
+}
 
-`;    
-    })
-    
-
-forecastHTML = forecastHTML + `</div>`;
-forecastElement.innerHTML = forecastHTML;
-
+//coordinates city
+function getForecast(coordinates) {
+    let apiKey = "88400465a62856e7c584fa794d05d7d7";
+    let apiUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${coordinates.lat}&lon=${coordinates.lon}&appid=${apiKey}&units=metric`;
+    console.log(apiUrl);
+    axios.get(apiUrl).then(displayForecast);
 }
 
 //show weather element
@@ -64,6 +92,7 @@ function displayTemperature(response) {
     let iconElement = document.querySelector("#icon");
 
     celsiusTemperature = response.data.main.temp;
+
     temperatureElement.innerHTML = Math.round(celsiusTemperature);
     cityElement.innerHTML = response.data.name;
     descriptionElement.innerHTML = response.data.weather[0].description;
@@ -74,20 +103,19 @@ function displayTemperature(response) {
     iconElement.setAttribute("alt", response.data.weather[0].description);
 
     getForecast(response.data.coord);
-
-
 }
 
 //search city input
 function search(city) {
-    let apiKey = "360f33424340a0f95a8c619e705e8605";
+    let apiKey = "88400465a62856e7c584fa794d05d7d7";
     let apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+    
     axios.get(apiUrl).then(displayTemperature);
 }
 //submit "search"
 function handleSubmit(event) {
     event.preventDefault();
-    let cityInputElement = document.querySelector("#city-input")
+    let cityInputElement = document.querySelector("#city-input");
     search(cityInputElement.value);
 }
 //converter C-F
@@ -109,9 +137,6 @@ function displayCelsiusTemperature(event) {
 }
 let celsiusTemperature = null;
 
-
-
-
 //submit form
 let form = document.querySelector("#search-form");
 form.addEventListener("submit", handleSubmit);
@@ -129,7 +154,7 @@ function currentCity(event) {
   event.preventDefault();
   
   function myPosition(position) {
-  let apiKey = "360f33424340a0f95a8c619e705e8605";
+  let apiKey = "88400465a62856e7c584fa794d05d7d7";
   let apiUrl =
       "https://api.openweathermap.org/data/2.5/weather?";
   let lat = position.coords.latitude;
@@ -154,5 +179,4 @@ document.querySelector("#current").addEventListener("click", currentCity);
 
 
 
-search("Glasgow");
-displayForecast();
+search("New York");
